@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Khush — Poetry Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="bg-layer"></div>
+<div id="bg-particles"></div>
+
+<div id="app">
+  <header>
+    <div class="logo">Khush <span>Poetry Studio</span></div>
+    <div class="header-actions">
+      <div class="autosave" id="autosave-indicator">
+        <div class="autosave-dot"></div>
+        <span>Saved</span>
+      </div>
+      <button class="btn-icon" id="btn-theme" title="Toggle light/dark">🌙</button>
+      <button class="btn-icon" id="btn-ai" title="Toggle AI suggestions">🧠</button>
+      <button class="btn-icon" id="btn-fav" title="Save to favorites">♡</button>
+      <button class="btn-primary" id="btn-share">Share</button>
+      <button class="btn-primary" id="btn-download">↓ Download</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="editor-section" id="editor-section">
+      <input
+        type="text"
+        class="poem-title-input"
+        id="poem-title"
+        placeholder="Untitled poem…"
+        maxlength="100"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <hr class="divider" />
+      <textarea
+        class="poem-textarea"
+        id="poem-body"
+        placeholder="Start writing…"
+        spellcheck="false"
+      ></textarea>
+      <div class="editor-meta">
+        <span id="word-count">0 words</span>
+        <span id="line-count">0 lines</span>
+      </div>
+      <div class="mood-indicator">
+        <span class="mood-dot" id="mood-dot"></span>
+        <span id="mood-label">cosmic</span>
+      </div>
+      <div class="ai-suggestion" id="ai-panel" style="display:none;">
+        <div class="suggestion-text" id="ai-text"></div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Mood</div>
+        <div class="mood-grid">
+          <button class="mood-chip selected" data-mood="romantic">💕<span>Romantic</span></button>
+          <button class="mood-chip" data-mood="dark">🌑<span>Dark</span></button>
+          <button class="mood-chip" data-mood="nature">🌿<span>Nature</span></button>
+          <button class="mood-chip" data-mood="melancholic">🌧<span>Melancholic</span></button>
+          <button class="mood-chip" data-mood="joyful">☀️<span>Joyful</span></button>
+          <button class="mood-chip" data-mood="cosmic">🌌<span>Cosmic</span></button>
+          <button class="mood-chip" data-mood="mystical">🔮<span>Mystical</span></button>
+          <button class="mood-chip" data-mood="stormy">⛈<span>Stormy</span></button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Custom Background Image</div>
+        <div class="bg-image-section">
+          <div class="bg-image-preview" id="bg-image-preview"></div>
+          <div class="bg-image-controls">
+            <button class="bg-upload-btn" id="bg-upload-btn">📁 Upload Image</button>
+            <button class="bg-remove-btn" id="bg-remove-btn" style="display:none;">✕ Remove</button>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.4;">Upload an image to overlay with the mood gradient. Shows as background with gradient on top.</div>
+        </div>
+        <input type="file" id="bg-image-input" accept="image/*" />
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Background Music</div>
+        <div class="music-card" id="music-card">
+          <div class="music-info">
+            <div class="music-icon" id="music-icon">🎵</div>
+            <div>
+              <div class="music-title" id="music-title">Select a mood</div>
+              <div class="music-sub" id="music-sub">to get suggestions</div>
+            </div>
+          </div>
+          <audio id="mood-audio" style="display:none;"></audio>
+          <div class="audio-player">
+            <button class="play-btn" id="play-btn" title="Play/Pause">▶</button>
+            <div class="song-title" id="song-title">Select a mood</div>
+            <div class="progress-container">
+              <div class="progress-bar" id="progress-bar">
+                <div class="progress-fill"></div>
+              </div>
+            </div>
+            <div class="controls">
+              <input type="range" id="volume-slider" class="volume-control" min="0" max="100" value="70" title="Volume" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Font Style</div>
+        <div class="font-options">
+          <button class="font-option f1 selected" data-font="cormorant">Cormorant Italic — elegant</button>
+          <button class="font-option f2" data-font="georgia">Georgia — classic</button>
+          <button class="font-option f3" data-font="dmsans">DM Sans — minimal</button>
+          <button class="font-option f4" data-font="mono">Monospace — typewriter</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Font Size</div>
+        <div class="range-row">
+          <span style="font-size:11px;color:var(--text-muted)">A</span>
+          <input type="range" id="font-size-range" min="14" max="28" value="20" step="1" />
+          <span style="font-size:15px;color:var(--text-muted)">A</span>
+          <span class="range-val" id="font-size-val">20px</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Favorites</div>
+        <div class="favorites-list" id="favorites-list">
+          <div class="empty-state">No saved poems yet…</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="share-modal">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">×</button>
+    <h3>Share your poem</h3>
+    <p>A snapshot of your poem, ready to share.</p>
+    <div class="share-preview" id="share-preview"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="copy-text-btn">Copy text</button>
+      <button class="btn-primary" id="copy-link-btn">Copy as link</button>
+      <button class="btn-primary" id="download-img-btn">Save as image</button>
+      <button class="btn-primary" id="download-pdf-btn">Save as PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
